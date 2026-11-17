@@ -1,0 +1,47 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, pricing %}
+{% block title %}Products | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="wrap page-pad">
+  <div class="sechead">
+    <h1>Products</h1>
+    <a class="btn" href="{{ url_for('admin_product_new') }}">Add product</a>
+  </div>
+  <form class="row" method="get" style="margin-bottom:1rem">
+    <label class="sr" for="q">Search products</label>
+    <input id="q" name="q" type="search" placeholder="Search by name" value="{{ q }}" style="max-width:20rem">
+    <button class="btn ghost small" type="submit">Search</button>
+  </form>
+  {% if rows %}
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Product</th><th>Category</th><th class="num">Selling price</th><th>Stock</th><th>Visibility</th><th></th></tr></thead>
+    <tbody>{% for p in rows %}
+      <tr>
+        <td><img class="thumb" src="{{ p|img }}" alt=""></td>
+        <td><a href="{{ url_for('admin_product_edit', pid=p.id) }}">{{ p.name }}</a><br><span class="muted">{{ p.material }}</span></td>
+        <td>{{ p.cat_name or 'None' }}</td>
+        <td class="num">{{ pricing(p) }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin_product_stock', pid=p.id) }}" class="inline">{{ csrf() }}
+            <label class="sr" for="s{{ p.id }}">Stock for {{ p.name }}</label>
+            <input id="s{{ p.id }}" type="number" name="stock" min="0" value="{{ p.stock }}">
+            <button class="btn small ghost" type="submit">Save</button>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="{{ url_for('admin_product_toggle', pid=p.id) }}" class="inline">{{ csrf() }}
+            <span class="badge {{ '' if p.active else 'off' }}">{{ 'Visible' if p.active else 'Hidden' }}</span>
+            <button class="link" type="submit">{{ 'Hide' if p.active else 'Show' }}</button>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="{{ url_for('admin_product_delete', pid=p.id) }}" onsubmit="return confirm('Delete {{ p.name|replace("'", "") }}? This cannot be undone.')">{{ csrf() }}
+            <button class="btn small danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No products found.</div>{% endif %}
+</div>
+{% endblock %}

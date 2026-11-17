@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Categories | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="mid page-pad">
+  <h1>Categories</h1>
+  <form method="post" class="row" style="margin-bottom:1.5rem">
+    {{ csrf() }}
+    <label class="sr" for="name">New category name</label>
+    <input id="name" name="name" required placeholder="New category, for example Pendants" style="max-width:22rem">
+    <button class="btn" type="submit">Add category</button>
+  </form>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Name</th><th class="num">Products</th><th></th></tr></thead>
+    <tbody>{% for c in rows %}
+      <tr><td>{{ c.name }}</td><td class="num">{{ c.n }}</td>
+      <td class="num"><form method="post" action="{{ url_for('admin_category_delete', cid=c.id) }}" onsubmit="return confirm('Delete this category?')">{{ csrf() }}<button class="btn small danger" type="submit">Delete</button></form></td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

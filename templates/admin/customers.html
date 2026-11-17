@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% block title %}Customers | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="wrap page-pad">
+  <h1>Customers</h1>
+  {% if rows %}
+  <div class="tablewrap"><table>
+    <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th class="num">Orders</th><th class="num">Spent</th></tr></thead>
+    <tbody>{% for u in rows %}
+      <tr><td>{{ u.name }}</td><td>{{ u.email }}</td><td>{{ u.created_at|date }}</td><td class="num">{{ u.orders }}</td><td class="num">{{ u.spent|inr }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No customers have registered yet.</div>{% endif %}
+</div>
+{% endblock %}

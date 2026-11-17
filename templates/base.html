@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ store_name }} | Gold and silver jewellery{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="top">Free delivery above {{ free_ship|inr }}.{% for t in top_offers %} {{ t }}.{% endfor %} NO COD.</div>
+<header class="site">
+  <div class="wrap bar">
+    <a class="logo" href="{{ url_for('home') }}">{{ store_name }}</a>
+    <nav class="main" aria-label="Categories">
+      <a href="{{ url_for('shop') }}">All jewellery</a>
+      {% for c in nav_categories %}<a href="{{ url_for('shop', cat=c.slug) }}">{{ c.name }}</a>{% endfor %}
+    </nav>
+    <form class="search" action="{{ url_for('shop') }}" role="search">
+      <label class="sr" for="q">Search jewellery</label>
+      <input id="q" name="q" type="search" placeholder="Search" value="{{ request.args.get('q','') }}">
+      <button class="btn small" type="submit">Search</button>
+    </form>
+    <div class="acct">
+      {% if user %}
+        {% if user.is_admin %}<a href="{{ url_for('admin_dashboard') }}">Admin</a>{% endif %}
+        <a href="{{ url_for('account') }}">{{ user.name.split()[0] }}</a>
+        <form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="link" type="submit">Log out</button></form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Log in</a>
+      {% endif %}
+      <a class="bagbtn" href="{{ url_for('bag') }}">Bag ({{ bag_count }})</a>
+    </div>
+  </div>
+</header>
+{% block admin_nav %}{% endblock %}
+<main>
+  <div class="wrap">
+    {% with msgs = get_flashed_messages(with_categories=true) %}{% if msgs %}
+      <div class="flashes" role="status">{% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}</div>
+    {% endif %}{% endwith %}
+  </div>
+  {% block content %}{% endblock %}
+</main>
+<footer class="site">
+  <div class="wrap">
+    <div><strong>{{ store_name }}</strong><br>Gold and silver jewellery, shipped across India.</div>
+    <div><a href="{{ url_for('shop') }}">Shop all</a><br><a href="{{ url_for('account') }}">My orders</a></div>
+  </div>
+</footer>
+</body>
+</html>

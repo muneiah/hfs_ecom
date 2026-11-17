@@ -1,0 +1,32 @@
+{# Selling price, with the actual price struck through and the % off when there is a discount.
+   Works for products and for order items (anything with price and mrp). #}
+{% macro pricing(p, show_pct=True) %}
+<span class="price">{{ p.price|inr }}</span>{% if p.mrp > p.price %}<s class="mrp"><span class="sr">Actual price </span>{{ p.mrp|inr }}</s>{% set pct = p|off %}{% if show_pct and pct %}<span class="off">{{ pct }}% off</span>{% endif %}{% endif %}
+{% endmacro %}
+
+{% macro card(p) %}
+<a class="card" href="{{ url_for('product', pid=p.id) }}">
+  <div class="card-img">
+    <img src="{{ p|img }}" alt="{{ p.name }}" loading="lazy">
+    {% if p.stock < 1 %}<span class="tag">Sold out</span>{% elif p.stock <= 3 %}<span class="tag">{{ p.stock }} left</span>{% endif %}
+    {% if p|off %}<span class="tag sale">{{ p|off }}% off</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <h3>{{ p.name }}</h3>
+    <p class="muted">{{ p.material }}</p>
+    <p>{{ pricing(p, false) }}</p>
+  </div>
+</a>
+{% endmacro %}
+
+{% macro pager(page, pages, endpoint, args) %}
+{% if pages > 1 %}
+<nav class="pager" aria-label="Pages">
+  {% for n in range(1, pages + 1) %}
+    <a class="chip {{ 'on' if n == page }}" {% if n == page %}aria-current="page"{% endif %} href="{{ url_for(endpoint, page=n, **args) }}">{{ n }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="csrf" value="{{ csrf_token() }}">{% endmacro %}
