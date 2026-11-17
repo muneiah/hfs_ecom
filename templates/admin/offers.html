@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Offers | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="wrap page-pad">
+  <div class="sechead">
+    <h1>Offers on order totals</h1>
+    <a class="btn" href="{{ url_for('admin_offer_new') }}">Add offer</a>
+  </div>
+  <p class="muted">An automatic offer applies to every order that qualifies, and is announced in the top bar of the store. A coupon offer only applies when the customer enters its code in the bag. Each order gets one offer: whichever saves the customer the most.</p>
+  {% if rows %}
+  <div class="tablewrap"><table>
+    <thead><tr><th>Offer</th><th>Discount</th><th>Last valid day</th><th>Status</th><th class="num">Orders</th><th class="num">Given</th><th></th></tr></thead>
+    <tbody>{% for o in rows %}
+      {% set st = o|offer_status %}
+      <tr>
+        <td><a href="{{ url_for('admin_offer_edit', oid=o.id) }}">{{ o.name }}</a><br><span class="muted" style="white-space:nowrap">{% if o.code %}Code <strong>{{ o.code }}</strong>{% else %}Applies automatically{% endif %}</span></td>
+        <td>{{ o|offer_text }}</td>
+        <td>{{ o.expires_on or 'No end date' }}</td>
+        <td><span class="badge {{ {'Active': 'delivered', 'Off': 'off', 'Expired': 'cancelled'}[st] }}">{{ st }}</span></td>
+        <td class="num">{{ o.used }}</td>
+        <td class="num">{{ o.given|inr }}</td>
+        <td>
+          <div class="row">
+            <a class="btn small ghost" href="{{ url_for('admin_offer_edit', oid=o.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('admin_offer_toggle', oid=o.id) }}">{{ csrf() }}<button class="btn small ghost" type="submit">{{ 'Turn off' if o.active else 'Turn on' }}</button></form>
+            <form method="post" action="{{ url_for('admin_offer_delete', oid=o.id) }}" onsubmit="return confirm('Delete this offer? Past orders keep their details.')">{{ csrf() }}<button class="btn small danger" type="submit">Delete</button></form>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <p class="hint">Orders and Given count orders that used the offer, not counting cancelled ones.</p>
+  {% else %}
+  <div class="empty"><p>No offers yet. Add one to give customers a discount on their order total.</p><a class="btn" href="{{ url_for('admin_offer_new') }}">Add offer</a></div>
+  {% endif %}
+</div>
+{% endblock %}

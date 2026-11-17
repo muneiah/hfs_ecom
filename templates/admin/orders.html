@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% block title %}Orders | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="wrap page-pad">
+  <h1>Orders</h1>
+  <div class="filters">
+    <a class="chip {{ 'on' if not status }}" href="{{ url_for('admin_orders') }}">All</a>
+    {% for s in statuses %}<a class="chip {{ 'on' if status == s }}" href="{{ url_for('admin_orders', status=s) }}">{{ s }}</a>{% endfor %}
+  </div>
+  {% if rows %}
+  <div class="tablewrap"><table>
+    <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Payment</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>{% for o in rows %}
+      <tr>
+        <td><a href="{{ url_for('admin_order', oid=o.id) }}">{{ o.id|order_no }}</a></td>
+        <td>{{ o.cust }}<br><span class="muted">{{ o.email }}</span></td>
+        <td>{{ o.created_at|date }}</td>
+        <td>{{ pay_labels[o.payment_method] }}<br><span class="muted">{{ o.payment_status }}</span></td>
+        <td><span class="badge {{ o.status|lower }}">{{ o.status }}</span></td>
+        <td class="num">{{ o.total|inr }}</td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty">No {{ status|lower ~ ' ' if status }}orders.</div>{% endif %}
+</div>
+{% endblock %}

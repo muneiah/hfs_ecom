@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card %}
+{% block content %}
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Jewellery you will still be wearing in twenty years</h1>
+      <p>Gold, rose gold and sterling silver pieces for every day and every occasion, priced openly and delivered to your door.</p>
+      <div class="row">
+        <a class="btn gold" href="{{ url_for('shop') }}">Shop all jewellery</a>
+        <a class="btn ghost" style="color:#F4EBD6;border-color:#F4EBD6" href="{{ url_for('shop', sale='1', sort='discount') }}">See what is on sale</a>
+      </div>
+    </div>
+    <svg viewBox="0 0 400 360" role="img" aria-label="Line drawing of a cut gemstone">
+      <g stroke-linejoin="round" stroke-linecap="round">
+        <polygon class="facet a" points="120,60 280,60 200,140" fill="#E8D3A4" opacity=".28"/>
+        <polygon class="facet b" points="120,60 40,140 125,140" fill="#E8D3A4" opacity=".14"/>
+        <polygon class="facet b" points="280,60 360,140 275,140" fill="#E8D3A4" opacity=".14"/>
+        <polygon class="facet a" points="125,140 200,140 200,330" fill="#E8D3A4" opacity=".08"/>
+        <polygon class="facet b" points="200,140 275,140 200,330" fill="#E8D3A4" opacity=".22"/>
+        <g fill="none" stroke="#E8D3A4" stroke-width="2.5">
+          <polygon points="120,60 280,60 360,140 200,330 40,140"/>
+          <line x1="40" y1="140" x2="360" y2="140"/>
+          <line x1="120" y1="60" x2="125" y2="140"/><line x1="120" y1="60" x2="200" y2="140"/>
+          <line x1="280" y1="60" x2="200" y2="140"/><line x1="280" y1="60" x2="275" y2="140"/>
+          <line x1="125" y1="140" x2="200" y2="330"/><line x1="200" y1="140" x2="200" y2="330"/>
+          <line x1="275" y1="140" x2="200" y2="330"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<div class="promises">
+  <div class="wrap">
+    <div><strong>Free delivery</strong>On every order above {{ free_ship|inr }}. {{ ship_fee|inr }} below that.</div>
+    <div><strong>Pay when it arrives</strong>Choose pay on delivery at checkout.</div>
+    <div><strong>Prices include everything shown</strong>The total in your bag is the total you pay.</div>
+  </div>
+</div>
+
+<section class="block">
+  <div class="wrap">
+    <div class="sechead"><h2>Browse by type</h2></div>
+    <div class="cats">
+      {% for c in cats %}<a href="{{ url_for('shop', cat=c.slug) }}"><strong>{{ c.name }}</strong><span>{{ c.n }} piece{{ '' if c.n == 1 else 's' }}</span></a>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="block" style="padding-top:0">
+  <div class="wrap">
+    <div class="sechead"><h2>New in the store</h2><a href="{{ url_for('shop') }}">See all jewellery</a></div>
+    {% if new %}
+      <div class="products">{% for p in new %}{{ card(p) }}{% endfor %}</div>
+    {% else %}
+      <div class="empty">No products yet. Add your first piece from the admin area.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

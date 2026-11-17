@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}My account | {{ store_name }}{% endblock %}
+{% block content %}
+<div class="mid page-pad">
+  <h1>My orders</h1>
+  <p class="muted">Signed in as {{ user.email }}. <a href="{{ url_for('change_password') }}">Change password</a></p>
+  {% if orders %}
+  <div class="tablewrap"><table>
+    <thead><tr><th>Order</th><th>Date</th><th>Status</th><th class="num">Total</th></tr></thead>
+    <tbody>{% for o in orders %}
+      <tr><td><a href="{{ url_for('order_view', oid=o.id) }}">{{ o.id|order_no }}</a></td><td>{{ o.created_at|date }}</td><td><span class="badge {{ o.status|lower }}">{{ o.status }}</span></td><td class="num">{{ o.total|inr }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}
+  <div class="empty"><p>You have not placed an order yet.</p><a class="btn" href="{{ url_for('shop') }}">Browse jewellery</a></div>
+  {% endif %}
+</div>
+{% endblock %}

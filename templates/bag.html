@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, pricing %}
+{% block title %}Your bag | {{ store_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <h1 style="margin-top:2rem">Your bag</h1>
+  {% if not cart.lines %}
+    <div class="empty"><p>Your bag is empty.</p><a class="btn" href="{{ url_for('shop') }}">Browse jewellery</a></div>
+  {% else %}
+  <div class="cols">
+    <div class="panel">
+      {% for l in cart.lines %}
+      <div class="line">
+        <a href="{{ url_for('product', pid=l.p.id) }}"><img src="{{ l.p|img }}" alt=""></a>
+        <div>
+          <h3><a href="{{ url_for('product', pid=l.p.id) }}" style="text-decoration:none;color:inherit">{{ l.p.name }}</a></h3>
+          <div class="muted">{{ l.p.material }} &middot; {{ pricing(l.p) }} each</div>
+          {% if not l.ok %}<div class="warn">{{ 'Sold out' if l.p.stock < 1 else 'Only ' ~ l.p.stock ~ ' available' }}. Lower the quantity or remove it.</div>{% endif %}
+          <div class="row">
+            <form method="post" action="{{ url_for('bag_update') }}" class="qty">
+              {{ csrf() }}<input type="hidden" name="product_id" value="{{ l.p.id }}">
+              <label class="sr" for="q{{ l.p.id }}">Quantity for {{ l.p.name }}</label>
+              <input id="q{{ l.p.id }}" type="number" name="qty" min="0" value="{{ l.qty }}">
+              <button class="btn small ghost" type="submit">Update</button>
+            </form>
+            <form method="post" action="{{ url_for('bag_remove') }}" class="qty">
+              {{ csrf() }}<input type="hidden" name="product_id" value="{{ l.p.id }}">
+              <button class="link" type="submit">Remove</button>
+            </form>
+          </div>
+        </div>
+        <div class="price">{{ l.total|inr }}{% if l.mrp_total > l.total %}<br><s class="mrp">{{ l.mrp_total|inr }}</s>{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    
+    <aside class="panel sum">
+      <h2>Order summary</h2>
+      {% if cart.product_savings %}
+        <div><span>Total at actual price</span><span>{{ cart.mrp_total|inr }}</span></div>
+        <div class="save-row"><span>Product discounts</span><span>&minus;{{ cart.product_savings|inr }}</span></div>
+      {% endif %}
+      <div><span>Subtotal</span><span>{{ cart.subtotal|inr }}</span></div>
+      {% if cart.offer %}
+        <div class="save-row"><span>{{ cart.offer.name }}{% if cart.coupon_applied %} ({{ cart.coupon }}){% endif %}</span><span>&minus;{{ cart.discount|inr }}</span></div>
+      {% endif %}
+      <div><span>Delivery</span><span>{{ 'Free' if cart.shipping == 0 else cart.shipping|inr }}</span></div>
+      {% if cart.shipping %}<p class="hint">Add {{ (free_ship - cart.subtotal)|inr }} more to your subtotal for free delivery.</p>{% endif %}
+      <div class="grand"><span>Total</span><span>{{ cart.total|inr }}</span></div>
+      {% if cart.saved %}<p class="saved">You are saving {{ cart.saved|inr }} on this order.</p>{% endif %}
+      {% if cart.next_offer %}
+        <p class="hint">Add {{ cart.next_gap|inr }} more to get {{ cart.next_offer|offer_short }} ({{ cart.next_offer.name }}).</p>
+      {% endif %}
+
+      <div class="coupon">
+        {% if cart.coupon_applied %}
+          <div class="applied">
+            <span><strong>{{ cart.coupon }}</strong> applied</span>
+            <form method="post" action="{{ url_for('bag_coupon_remove') }}">{{ csrf() }}<button class="link" type="submit">Remove</button></form>
+          </div>
+        {% else %}
+          <form method="post" action="{{ url_for('bag_coupon') }}">
+            {{ csrf() }}
+            <label for="code">Coupon code</label>
+            <div class="row">
+              <input id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20">
+              <button class="btn small ghost" type="submit">Apply</button>
+            </div>
+          </form>
+          {% if cart.coupon_note %}
+            <div class="hint">{{ cart.coupon_note }}
+              <form method="post" action="{{ url_for('bag_coupon_remove') }}" style="display:inline">{{ csrf() }}<button class="link" type="submit">Clear code</button></form>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      {% if cart.lines|selectattr('ok', 'equalto', false)|list %}
+        <button class="btn" style="width:100%;margin-top:1rem" disabled>Fix your bag to continue</button>
+      {% else %}
+        <a class="btn gold" style="width:100%;margin-top:1rem" href="{{ url_for('checkout') }}">Go to checkout</a>
+      {% endif %}
+      {% if not user %}<p class="hint" style="margin-top:.75rem">You will log in or create an account at checkout. Your bag is kept.</p>{% endif %}
+    </aside>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card, pager %}
+{% block title %}{{ 'Search: ' ~ q if q else 'Jewellery' }} | {{ store_name }}{% endblock %}
+{% block content %}
+<div class="wrap shop-head">
+  <h1>{% if q %}Results for “{{ q }}”{% elif sale %}Jewellery on sale{% else %}All jewellery{% endif %}</h1>
+  <p class="muted">{{ total }} piece{{ '' if total == 1 else 's' }}</p>
+  <div class="filters">
+    <a class="chip {{ 'on' if not cat }}" href="{{ url_for('shop', q=q or None, sort=sort if sort != 'new' else None, sale='1' if sale else None) }}">All</a>
+    {% for c in nav_categories %}
+      <a class="chip {{ 'on' if cat == c.slug }}" href="{{ url_for('shop', cat=c.slug, q=q or None, sort=sort if sort != 'new' else None, sale='1' if sale else None) }}">{{ c.name }}</a>
+    {% endfor %}
+    <a class="chip {{ 'on' if sale }}" {% if sale %}aria-current="true"{% endif %} href="{{ url_for('shop', cat=cat or None, q=q or None, sort=sort if sort != 'new' else None, sale=None if sale else '1') }}">On sale</a>
+    <form class="sortform" method="get">
+      {% if cat %}<input type="hidden" name="cat" value="{{ cat }}">{% endif %}
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      {% if sale %}<input type="hidden" name="sale" value="1">{% endif %}
+      <label for="sort" class="sr">Sort by</label>
+      <select id="sort" name="sort">
+        <option value="new" {{ 'selected' if sort == 'new' }}>Newest first</option>
+        <option value="price_asc" {{ 'selected' if sort == 'price_asc' }}>Price, low to high</option>
+        <option value="price_desc" {{ 'selected' if sort == 'price_desc' }}>Price, high to low</option>
+        <option value="discount" {{ 'selected' if sort == 'discount' }}>Biggest discount</option>
+      </select>
+      <button class="btn small ghost" type="submit">Sort</button>
+    </form>
+  </div>
+
+  
+  {% if items %}
+    <div class="products">{% for p in items %}{{ card(p) }}{% endfor %}</div>
+    {{ pager(page, pages, 'shop', args) }}
+  {% else %}
+    <div class="empty">
+      <p>Nothing matches{% if q %} “{{ q }}”{% endif %}{% if sale %} among the pieces on sale{% endif %}.</p>
+      <a class="btn" href="{{ url_for('shop') }}">Show all jewellery</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

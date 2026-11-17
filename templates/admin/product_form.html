@@ -1,0 +1,56 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Add product' if is_new else 'Edit product' }} | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="mid page-pad">
+  <p class="muted"><a href="{{ url_for('admin_products') }}">Products</a></p>
+  <h1>{{ 'Add product' if is_new else 'Edit product' }}</h1>
+  <form method="post" enctype="multipart/form-data" class="panel">
+    {{ csrf() }}
+    <div class="field"><label for="name">Name</label><input id="name" name="name" required value="{{ p.name or '' }}"></div>
+    <div class="field"><label for="description">Description</label><textarea id="description" name="description">{{ p.description or '' }}</textarea></div>
+    <div class="grid2">
+      <div class="field"><label for="category_id">Category</label>
+        <select id="category_id" name="category_id">
+          <option value="">None</option>
+          {% for c in cats %}<option value="{{ c.id }}" {{ 'selected' if p.category_id == c.id }}>{{ c.name }}</option>{% endfor %}
+        </select></div>
+      <div class="field"><label for="material">Metal</label><input id="material" name="material" list="metals" placeholder="Gold, Rose gold or Silver" value="{{ p.material or '' }}">
+        <datalist id="metals"><option>Gold</option><option>Rose gold</option><option>Silver</option></datalist>
+        <div class="hint">Gold, Rose gold and Silver set the colour of the placeholder picture.</div></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="mrp">Actual price (MRP) in rupees</label><input id="mrp" name="mrp" type="number" min="0" step="1" value="{{ p.mrp or '' }}">
+        <div class="hint">The original price, shown struck through. Leave blank for no discount.</div></div>
+      <div class="field"><label for="price">Selling price in rupees</label><input id="price" name="price" type="number" min="0" step="1" required value="{{ p.price if p.price is not none else '' }}">
+        <div class="hint">What the customer pays. Can't be higher than the actual price.</div></div>
+    </div>
+    <p class="hint" id="pct-preview" aria-live="polite" style="margin-top:-.25rem"></p>
+    <div class="field" style="max-width:12rem"><label for="stock">Stock</label><input id="stock" name="stock" type="number" min="0" step="1" required value="{{ p.stock if p.stock is not none else 0 }}"></div>
+    <script>
+      (function () {
+        var mrp = document.getElementById('mrp'), price = document.getElementById('price'),
+            out = document.getElementById('pct-preview');
+        function show() {
+          var m = parseInt(mrp.value, 10), p = parseInt(price.value, 10);
+          if (isNaN(p)) { out.textContent = ''; return; }
+          if (isNaN(m) || m === p) { out.textContent = 'No discount. Customers see one price.'; return; }
+          if (m < p) { out.textContent = 'The selling price is higher than the actual price. Fix this before saving.'; return; }
+          var pct = Math.round((m - p) * 100 / m);
+          out.textContent = 'Customers save ₹' + (m - p).toLocaleString('en-IN') + (pct ? ' (' + pct + '% off).' : '.');
+        }
+        mrp.addEventListener('input', show); price.addEventListener('input', show); show();
+      })();
+    </script>
+    <div class="field">
+      <label for="image">Photo</label>
+      {% if p.image %}<img class="thumb" style="width:96px;height:96px;margin-bottom:.5rem" src="{{ p|img }}" alt="Current photo">{% endif %}
+      <input id="image" name="image" type="file" accept="image/png,image/jpeg,image/webp">
+      <div class="hint">PNG, JPG or WebP, up to 3 MB. Square photos look best. Without a photo, a placeholder picture is shown.</div>
+      {% if p.image %}<label style="font-weight:400;margin-top:.5rem"><input type="checkbox" name="remove_image" value="1"> Remove current photo</label>{% endif %}
+    </div>
+    <div class="field"><label style="font-weight:400"><input type="checkbox" name="active" value="1" {{ 'checked' if p.active }}> Show this product in the store</label></div>
+    <div class="row"><button class="btn" type="submit">Save product</button><a class="btn ghost" href="{{ url_for('admin_products') }}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

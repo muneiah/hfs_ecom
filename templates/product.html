@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card, csrf, pricing %}
+{% block title %}{{ p.name }} | {{ store_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="crumbs"><a href="{{ url_for('shop') }}">All jewellery</a>{% if p.cat_name %} / <a href="{{ url_for('shop', cat=p.cat_slug) }}">{{ p.cat_name }}</a>{% endif %}</div>
+  <div class="pdp">
+    <div class="pic"><img src="{{ p|img }}" alt="{{ p.name }}"></div>
+    <div>
+      <h1>{{ p.name }}</h1>
+      <div class="pdp-price">{{ pricing(p) }}</div>
+      {% if p.mrp > p.price %}<p class="save-line">You save {{ (p.mrp - p.price)|inr }}</p>{% endif %}
+      <p>{{ p.description }}</p>
+      {% if p.stock < 1 %}
+        <p class="stock-low">Sold out</p>
+        <button class="btn" disabled>Add to bag</button>
+      {% else %}
+        {% if p.stock <= 3 %}<p class="stock-low">Only {{ p.stock }} left</p>{% endif %}
+        <form method="post" action="{{ url_for('bag_add') }}" class="buy">
+          {{ csrf() }}
+          <input type="hidden" name="product_id" value="{{ p.id }}">
+          <input type="hidden" name="next" value="{{ url_for('product', pid=p.id) }}">
+          <label class="sr" for="qty">Quantity</label>
+          <select id="qty" name="qty">{% for n in range(1, max_qty + 1) %}<option>{{ n }}</option>{% endfor %}</select>
+          <button class="btn gold" type="submit">Add to bag</button>
+        </form>
+      {% endif %}
+      <dl class="specs">
+        {% if p.material %}<div><dt>Metal</dt><dd>{{ p.material }}</dd></div>{% endif %}
+        {% if p.cat_name %}<div><dt>Type</dt><dd>{{ p.cat_name }}</dd></div>{% endif %}
+        <div><dt>Delivery</dt><dd>{{ 'Free' if p.price >= free_ship else 'Free above ' ~ (free_ship|inr) }}</dd></div>
+      </dl>
+    </div>
+  </div>
+  {% if related %}
+  <section class="block" style="padding-top:1rem">
+    <div class="sechead"><h2>More {{ p.cat_name|lower if p.cat_name else 'pieces' }}</h2></div>
+    <div class="products">{% for r in related %}{{ card(r) }}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

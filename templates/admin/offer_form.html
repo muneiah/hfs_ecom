@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Add offer' if is_new else 'Edit offer' }} | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="mid page-pad">
+  <p class="muted"><a href="{{ url_for('admin_offers') }}">Offers</a></p>
+  <h1>{{ 'Add offer' if is_new else 'Edit offer' }}</h1>
+  <form method="post" class="panel">
+    {{ csrf() }}
+    <div class="field"><label for="name">Offer name</label><input id="name" name="name" required maxlength="60" value="{{ o.name or '' }}" placeholder="Festive saving">
+      <div class="hint">Customers see this name in their bag and on their order.</div></div>
+
+    <div class="grid2">
+      <div class="field"><label for="kind">Type of discount</label>
+        <select id="kind" name="kind">
+          <option value="percent" {{ 'selected' if o.kind != 'flat' }}>Percent off the order</option>
+          <option value="flat" {{ 'selected' if o.kind == 'flat' }}>Flat rupees off the order</option>
+        </select></div>
+      <div class="field"><label for="value">Discount amount</label><input id="value" name="value" type="number" min="1" step="1" required value="{{ o.value or '' }}">
+        <div class="hint" id="value-hint">Percent (1 to 90) or rupees, depending on the type.</div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="field"><label for="min_subtotal">Minimum order in rupees</label><input id="min_subtotal" name="min_subtotal" type="number" min="0" step="1" value="{{ o.min_subtotal if o.min_subtotal is not none else 0 }}">
+        <div class="hint">Measured on the subtotal after product discounts. Use 0 for no minimum. A flat discount needs a minimum above its amount.</div></div>
+      <div class="field" id="cap-field"><label for="max_discount">Largest discount in rupees</label><input id="max_discount" name="max_discount" type="number" min="1" step="1" value="{{ o.max_discount or '' }}">
+        <div class="hint">Percent offers only. Leave blank for no limit.</div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="field"><label for="code">Coupon code</label><input id="code" name="code" maxlength="20" autocapitalize="characters" spellcheck="false" value="{{ o.code or '' }}" placeholder="Leave blank to apply automatically">
+        <div class="hint">3 to 20 letters or numbers, for example FESTIVE10. Customers type it in their bag.</div></div>
+      <div class="field"><label for="expires_on">Last valid day</label><input id="expires_on" name="expires_on" type="date" value="{{ o.expires_on or '' }}">
+        <div class="hint">The offer works through the end of this day. Leave blank for no end date.</div></div>
+    </div>
+
+    <div class="field"><label style="font-weight:400"><input type="checkbox" name="active" value="1" {{ 'checked' if o.active }}> Offer is on</label></div>
+    <div class="row"><button class="btn" type="submit">Save offer</button><a class="btn ghost" href="{{ url_for('admin_offers') }}">Cancel</a></div>
+  </form>
+  <script>
+    (function () {
+      var kind = document.getElementById('kind'), cap = document.getElementById('cap-field'),
+          hint = document.getElementById('value-hint'), cap_in = document.getElementById('max_discount');
+      function sync() {
+        var pct = kind.value !== 'flat';
+        cap.style.display = pct ? '' : 'none';
+        cap_in.disabled = !pct;
+        hint.textContent = pct ? 'Percent off, from 1 to 90.' : 'Rupees off the order total.';
+      }
+      kind.addEventListener('change', sync); sync();
+    })();
+  </script>
+</div>
+{% endblock %}

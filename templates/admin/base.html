@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block admin_nav %}
+<div class="admin-nav">
+  <div class="wrap">
+    {% set ep = request.endpoint or '' %}
+    <a class="{{ 'on' if ep == 'admin_dashboard' }}" href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+    <a class="{{ 'on' if ep.startswith('admin_product') }}" href="{{ url_for('admin_products') }}">Products</a>
+    <a class="{{ 'on' if ep.startswith('admin_order') }}" href="{{ url_for('admin_orders') }}">Orders</a>
+    <a class="{{ 'on' if ep.startswith('admin_offer') }}" href="{{ url_for('admin_offers') }}">Offers</a>
+    <a class="{{ 'on' if ep == 'admin_categories' }}" href="{{ url_for('admin_categories') }}">Categories</a>
+    <a class="{{ 'on' if ep == 'admin_customers' }}" href="{{ url_for('admin_customers') }}">Customers</a>
+    <a href="{{ url_for('change_password') }}">Change my password</a>
+  </div>
+</div>
+{% endblock %}

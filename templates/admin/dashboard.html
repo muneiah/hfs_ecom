@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Dashboard | {{ store_name }} admin{% endblock %}
+{% block content %}
+<div class="wrap page-pad">
+  <h1>Dashboard</h1>
+  <div class="stats">
+    <div class="stat"><b>{{ s.orders }}</b>Orders</div>
+    <div class="stat"><b>{{ s.pending }}</b>Waiting to be confirmed</div>
+    <div class="stat"><b>{{ s.revenue|inr }}</b>Sales, excluding cancelled</div>
+    <div class="stat"><b>{{ s.discounts|inr }}</b>Given as offer discounts</div>
+    <div class="stat"><b>{{ s.products }}</b>Products in the store</div>
+    <div class="stat"><b>{{ s.customers }}</b>Customers</div>
+  </div>
+
+  <div class="grid2" style="align-items:start">
+    <div>
+      <div class="sechead"><h2>Recent orders</h2><a href="{{ url_for('admin_orders') }}">All orders</a></div>
+      {% if recent %}
+      <div class="tablewrap"><table>
+        <thead><tr><th>Order</th><th>Status</th><th class="num">Total</th></tr></thead>
+        <tbody>{% for o in recent %}
+          <tr><td><a href="{{ url_for('admin_order', oid=o.id) }}">{{ o.id|order_no }}</a><br><span class="muted">{{ o.created_at|date }}</span></td>
+          <td><span class="badge {{ o.status|lower }}">{{ o.status }}</span></td><td class="num">{{ o.total|inr }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+      {% else %}<div class="empty">No orders yet.</div>{% endif %}
+    </div>
+    <div>
+      <div class="sechead"><h2>Low or no stock</h2><span class="muted">{{ low_at }} or fewer left</span></div>
+      {% if low %}
+      <div class="tablewrap"><table>
+        <thead><tr><th>Product</th><th>Set stock</th></tr></thead>
+        <tbody>{% for p in low %}
+          <tr><td><a href="{{ url_for('admin_product_edit', pid=p.id) }}">{{ p.name }}</a><br><span class="muted">{{ p.stock }} in stock</span></td>
+          <td><form method="post" action="{{ url_for('admin_product_stock', pid=p.id) }}" class="inline">{{ csrf() }}
+            <input type="hidden" name="next" value="{{ url_for('admin_dashboard') }}">
+            <label class="sr" for="s{{ p.id }}">Stock for {{ p.name }}</label>
+            <input id="s{{ p.id }}" type="number" name="stock" min="0" value="{{ p.stock }}"><button class="btn small" type="submit">Save</button></form></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+      {% else %}<div class="empty">Every product has enough stock.</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

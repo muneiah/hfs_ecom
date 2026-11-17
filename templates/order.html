@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, pricing %}
+{% block title %}Order {{ o.id|order_no }} | {{ store_name }}{% endblock %}
+{% block content %}
+{% set saved = (o.mrp_total - o.subtotal) + o.discount %}
+<div class="mid page-pad">
+  <p class="muted"><a href="{{ url_for('account') }}">My orders</a></p>
+  <h1>Order {{ o.id|order_no }}</h1>
+  <p><span class="badge {{ o.status|lower }}">{{ o.status }}</span> &nbsp; Placed {{ o.created_at|date }}</p>
+  <div class="tablewrap panel" style="padding:0">
+    <table>
+      <thead><tr><th>Item</th><th class="num">Price</th><th class="num">Qty</th><th class="num">Total</th></tr></thead>
+      <tbody>
+      {% for i in items %}<tr><td>{{ i.name }}</td><td class="num">{{ pricing(i, false) }}</td><td class="num">{{ i.qty }}</td><td class="num">{{ (i.price * i.qty)|inr }}</td></tr>{% endfor %}
+      <tr><td colspan="3" class="num">Subtotal</td><td class="num">{{ o.subtotal|inr }}</td></tr>
+      {% if o.discount %}<tr class="save-row"><td colspan="3" class="num">{{ o.discount_label or 'Offer discount' }}</td><td class="num">&minus;{{ o.discount|inr }}</td></tr>{% endif %}
+      <tr><td colspan="3" class="num">Delivery</td><td class="num">{{ 'Free' if o.shipping == 0 else o.shipping|inr }}</td></tr>
+      <tr><td colspan="3" class="num"><strong>Total</strong></td><td class="num"><strong>{{ o.total|inr }}</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% if saved > 0 %}<p class="saved">You saved {{ saved|inr }} on this order.</p>{% endif %}
+  <div class="grid2" style="margin-top:1.5rem">
+    <div class="panel"><h3>Delivering to</h3><p style="margin:0">{{ o.ship_name }}<br>{{ o.ship_address }}<br>{{ o.ship_city }}, {{ o.ship_state }} {{ o.ship_pincode }}<br>Mobile {{ o.ship_phone }}</p></div>
+    <div class="panel"><h3>Payment</h3><p style="margin:0">{{ pay_labels[o.payment_method] }}<br>{{ o.payment_status }}</p></div>
+  </div>
+  {% if o.status == 'Pending' %}
+  <form method="post" action="{{ url_for('order_cancel', oid=o.id) }}" style="margin-top:1.5rem" onsubmit="return confirm('Cancel this order?')">
+    {{ csrf() }}<button class="btn danger" type="submit">Cancel order</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
