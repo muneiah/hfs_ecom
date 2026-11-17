@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "python app.py",
+    "start": "next start"
+  }
+}
